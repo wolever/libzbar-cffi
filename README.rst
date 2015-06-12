@@ -10,6 +10,14 @@ Note: currently a work in progress. Entirely functional and production-ready,
 but missing some configuration options.
 
 
+Installation
+------------
+
+::
+
+    $ pip install libzbar-cffi
+
+
 Examples
 --------
 
