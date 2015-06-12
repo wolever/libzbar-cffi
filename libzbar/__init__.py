@@ -31,34 +31,16 @@ class CEnum(object):
         return self._by_value.get(value, default)
 
 
-class managed(object):
-    __slots__ = ('o', 'free')
-
-    def __init__(self, create, args, free):
-        self.o = None
-        self.free = free
-        self.o = create(*args)
-        if self.o == ffi.NULL:
-            raise MemoryError("%s could not allocate memory" %(create.__name__, ))
-
-    def __del__(self):
-        if self.o is not None and self.o != ffi.NULL:
-            self.free(self.o)
-            self.o = None
+def managed(create, args, free):
+    o = create(*args)
+    if o == ffi.NULL:
+        raise MemoryError("%s could not allocate memory" %(create.__name__, ))
+    return ffi.gc(o, free)
 
 
-class refcounted(object):
-    __slots__ = ('o', 'func')
-
-    def __init__(self, o, func):
-        self.o = None
-        self.func = func
-        func(o, 1)
-        self.o = o
-
-    def __del__(self):
-        if self.o is not None:
-            self.func(self.o, -1)
+def refcounted(o, func):
+    func(o, 1)
+    return ffi.gc(o, lambda o: func(o, -1))
 
 
 def check(func, args):
@@ -73,7 +55,7 @@ class Scanner(object):
     def __init__(self):
         self._scanner = managed(lib.zbar_image_scanner_create, (),
                                 lib.zbar_image_scanner_destroy)
-        check(lib.zbar_image_scanner_set_config, (self._scanner.o, 0, lib.ZBAR_CFG_ENABLE, 1))
+        check(lib.zbar_image_scanner_set_config, (self._scanner, 0, lib.ZBAR_CFG_ENABLE, 1))
 
     def scan_image(self, image):
         return image.scan(self)
@@ -85,9 +67,9 @@ class Image(object):
         self.data = data
         self._img = managed(lib.zbar_image_create, (),
                             lib.zbar_image_destroy)
-        lib.zbar_image_set_format(self._img.o, lib.ZBAR_FORMAT_GREY)
-        lib.zbar_image_set_size(self._img.o, size[0], size[1])
-        lib.zbar_image_set_data(self._img.o, data, len(data), ffi.NULL)
+        lib.zbar_image_set_format(self._img, lib.ZBAR_FORMAT_GREY)
+        lib.zbar_image_set_size(self._img, size[0], size[1])
+        lib.zbar_image_set_data(self._img, data, len(data), ffi.NULL)
 
     @classmethod
     def from_im(cls, im):
@@ -96,10 +78,10 @@ class Image(object):
         return cls(im.size, im.tobytes())
 
     def scan(self, scanner):
-        n = lib.zbar_scan_image(scanner._scanner.o, self._img.o)
+        n = lib.zbar_scan_image(scanner._scanner, self._img)
         if n < 0:
             raise ValueError("Error while scanning image: %s" %(n, ))
-        symbol = lib.zbar_image_first_symbol(self._img.o)
+        symbol = lib.zbar_image_first_symbol(self._img)
         symbols = []
         while symbol != ffi.NULL:
             symbols.append(Symbol(symbol))
@@ -133,12 +115,12 @@ class Symbol(object):
 
     @property
     def type(self):
-        return self.types.from_value(lib.zbar_symbol_get_type(self._sym.o))
+        return self.types.from_value(lib.zbar_symbol_get_type(self._sym))
 
     @property
     def data(self):
-        data = lib.zbar_symbol_get_data(self._sym.o)
-        return bytes(ffi.buffer(data, lib.zbar_symbol_get_data_length(self._sym.o)))
+        data = lib.zbar_symbol_get_data(self._sym)
+        return bytes(ffi.buffer(data, lib.zbar_symbol_get_data_length(self._sym)))
 
     @property
     def quality(self):
@@ -150,16 +132,16 @@ class Symbol(object):
             metric is refined. Currently, only the ordered relationship
             between two values is defined and will remain stable in the future.
             """
-        return lib.zbar_symbol_get_quality(self._sym.o)
+        return lib.zbar_symbol_get_quality(self._sym)
 
     @property
     def locator(self):
         """ Returns a list of (x, y) points in the locator polygon. """
         result = []
-        for pt in range(lib.zbar_symbol_get_loc_size(self._sym.o)):
+        for pt in range(lib.zbar_symbol_get_loc_size(self._sym)):
             result.append((
-                lib.zbar_symbol_get_loc_x(self._sym.o, pt),
-                lib.zbar_symbol_get_loc_y(self._sym.o, pt),
+                lib.zbar_symbol_get_loc_x(self._sym, pt),
+                lib.zbar_symbol_get_loc_y(self._sym, pt),
             ))
         return result
 
