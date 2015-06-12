@@ -61,20 +61,28 @@ class Scanner(object):
 
 
 class Image(object):
-    def __init__(self, size, data):
+    def __init__(self, size, data, data_ref=None):
         self.size = size
-        self.data = ffi.new("uint8_t[]", data)
+        self.data = data
+        self.data_ref = data_ref
         self._img = managed(lib.zbar_image_create, (),
                             lib.zbar_image_destroy)
         lib.zbar_image_set_format(self._img, lib.ZBAR_FORMAT_GREY)
         lib.zbar_image_set_size(self._img, size[0], size[1])
-        lib.zbar_image_set_data(self._img, self.data, len(data), ffi.NULL)
+        lib.zbar_image_set_data(self._img, self.data, size[0] * size[1], ffi.NULL)
 
     @classmethod
     def from_im(cls, im):
         if im.mode != "L":
             im = im.convert("L")
-        return cls(im.size, im.tobytes())
+        data = ffi.new("uint8_t[]", im.tobytes())
+        return cls(im.size, data)
+
+    @classmethod
+    def from_np(cls, size, arr):
+        if arr.dtype.itemsize != 1:
+            arr = arr.astype("uint8")
+        return cls(size, ffi.cast("uint8_t*", arr.ctypes.data), data_ref=arr)
 
     def scan(self, scanner=None):
         scanner = scanner or Scanner()
