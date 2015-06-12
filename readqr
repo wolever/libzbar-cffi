@@ -6,10 +6,5 @@ import libzbar as zbar
 im = Image.open(sys.argv[1])
 
 scanner = zbar.Scanner()
-
-def stuff(scanner):
-    image = zbar.Image.from_im(im)
-    print image.scan(scanner)
-
-stuff(scanner)
-print "Done!"
+image = zbar.Image.from_im(im)
+print image.scan(scanner)

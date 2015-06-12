@@ -1,2 +1,2 @@
 include README.rst
-include libqrencode/qrencode-3.4.4-noifdefs.h
+include libzbar/zbar-0.10-noifdefs.h

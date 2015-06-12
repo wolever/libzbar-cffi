@@ -8,9 +8,8 @@ def zbar_version():
 
 class CEnum(object):
     def __init__(self, lib, names):
-        if isinstance(names, basestring):
-            names = [n.strip().split(None, 1)[:1] for n in names.splitlines()]
-            names = [n[0] for n in names if n and n[0]]
+        names = [n.strip().split(None, 1)[:1] for n in names.splitlines()]
+        names = [n[0] for n in names if n and n[0]]
         vals = [getattr(lib, n) for n in names]
         self._by_name = dict(zip(names, vals))
         self._by_value = dict(zip(vals, names))
@@ -64,12 +63,12 @@ class Scanner(object):
 class Image(object):
     def __init__(self, size, data):
         self.size = size
-        self.data = data
+        self.data = ffi.new("uint8_t[]", data)
         self._img = managed(lib.zbar_image_create, (),
                             lib.zbar_image_destroy)
         lib.zbar_image_set_format(self._img, lib.ZBAR_FORMAT_GREY)
         lib.zbar_image_set_size(self._img, size[0], size[1])
-        lib.zbar_image_set_data(self._img, data, len(data), ffi.NULL)
+        lib.zbar_image_set_data(self._img, self.data, len(data), ffi.NULL)
 
     @classmethod
     def from_im(cls, im):
@@ -77,7 +76,8 @@ class Image(object):
             im = im.convert("L")
         return cls(im.size, im.tobytes())
 
-    def scan(self, scanner):
+    def scan(self, scanner=None):
+        scanner = scanner or Scanner()
         n = lib.zbar_scan_image(scanner._scanner, self._img)
         if n < 0:
             raise ValueError("Error while scanning image: %s" %(n, ))
