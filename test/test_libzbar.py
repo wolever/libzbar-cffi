@@ -1,7 +1,10 @@
 import os
 
 import pytest
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 from PIL import Image
 
 import libzbar as zbar
@@ -26,6 +29,7 @@ def test_scan_simple(img, expected):
 
 
 @pytest.mark.parametrize("img,expected", test_images)
+@pytest.mark.skipif(np is None, reason="requires numpy")
 def test_from_np(img, expected):
     im = Image.open(path(img))
     arr = np.array(im)

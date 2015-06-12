@@ -10,7 +10,7 @@ os.chdir(os.path.dirname(sys.argv[0]) or ".")
 setup(
     name="libzbar-cffi",
     version="0.1",
-    description="cffi-based bindings for the zbar QR decoder (Py2, Py3, and PyPy)",
+    description="Efficient cffi-based bindings for the zbar QR decoder (Py2, Py3, and PyPy)",
     long_description=open("README.rst", "rt").read(),
     url="https://github.com/wolever/libzbar-cffi",
     author="David Wolever",
