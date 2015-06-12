@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+import sys
+from PIL import Image
+import libzbar as zbar
+
+im = Image.open(sys.argv[1])
+
+scanner = zbar.Scanner()
+
+def stuff(scanner):
+    image = zbar.Image.from_im(im)
+    print image.scan(scanner)
+
+stuff(scanner)
+print "Done!"

@@ -1,0 +1,2 @@
+include README.rst
+include libqrencode/qrencode-3.4.4-noifdefs.h
