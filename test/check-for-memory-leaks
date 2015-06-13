@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+import numpy as np
+from PIL import Image
+
+import resource
+import libzbar as zbar
+
+def run_tests(get_im, n, s_reuse, im_reuse):
+    while True:
+        s = zbar.Scanner()
+        for _ in xrange(s_reuse):
+            im = get_im()
+            for _ in xrange(im_reuse):
+                im.scan(scanner=s)
+                n -= 1
+                if n == 0:
+                    return
+
+def get_rusage():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+def fmt_russage(rusage):
+    rusage = str(rusage)
+    res = []
+    while rusage:
+        res.append(rusage[-3:])
+        rusage = rusage[:-3]
+    return ",".join(reversed(res))
+
+im = Image.open("./qr-null-byte.png")
+ima = np.array(im)
+
+print "Starting tests."
+print "Initial RSS:", fmt_russage(get_rusage())
+
+run_tests(lambda: zbar.Image.from_np(im.size, ima), 100, 10, 10)
+run_tests(lambda: zbar.Image.from_im(im), 100, 10, 10)
+post_warmup = get_rusage()
+print " Warmup RSS:", fmt_russage(post_warmup)
+while True:
+    run_tests(lambda: zbar.Image.from_np(im.size, ima), 1000, 10, 10)
+    run_tests(lambda: zbar.Image.from_im(im), 1000, 10, 10)
+    print "        RSS:", fmt_russage(get_rusage())
