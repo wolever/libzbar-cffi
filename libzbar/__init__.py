@@ -58,28 +58,35 @@ class Scanner(object):
 
 
 class Image(object):
-    def __init__(self, size, data, data_ref=None):
+    def __init__(self, size, cdata, cdata_size, cdata_ref=None):
+        if size[0] * size[1] != cdata_size:
+            raise ValueError("Size does not match data length: %s * %s != %s" %(
+                size[0], size[1], cdata_size,
+            ))
+
         self.size = size
-        self.data = data
-        self.data_ref = data_ref
+        self._cdata = cdata
+        self._cdata_ref = cdata_ref
+
         self._img = managed(lib.zbar_image_create, (),
                             lib.zbar_image_destroy)
         lib.zbar_image_set_format(self._img, lib.ZBAR_FORMAT_GREY)
         lib.zbar_image_set_size(self._img, size[0], size[1])
-        lib.zbar_image_set_data(self._img, self.data, size[0] * size[1], ffi.NULL)
+        lib.zbar_image_set_data(self._img, cdata, cdata_size, ffi.NULL)
 
     @classmethod
     def from_im(cls, im):
         if im.mode != "L":
             im = im.convert("L")
-        data = ffi.new("uint8_t[]", im.tobytes())
-        return cls(im.size, data)
+        cdata = ffi.new("uint8_t[]", im.tobytes())
+        return cls(im.size, cdata, ffi.sizeof(cdata) - 1)
 
     @classmethod
     def from_np(cls, size, arr):
         if arr.dtype.itemsize != 1:
             arr = arr.astype("uint8")
-        return cls(size, ffi.cast("uint8_t*", arr.ctypes.data), data_ref=arr)
+        cdata = ffi.cast("uint8_t*", arr.ctypes.data)
+        return cls(size, cdata, arr.size, cdata_ref=arr)
 
     def scan(self, scanner=None):
         scanner = scanner or Scanner()

@@ -37,3 +37,9 @@ def test_from_np(img, expected):
     assert len(symbols) == 1
     symbol = symbols[0]
     assert symbol.data == expected
+
+@pytest.mark.skipif(np is None, reason="requires numpy")
+def test_np_invalid_size():
+    arr = np.zeros(1)
+    with pytest.raises(ValueError):
+        zbar.Image.from_np((1000, 1000), arr)
