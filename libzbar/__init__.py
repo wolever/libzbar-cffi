@@ -36,18 +36,15 @@ def managed(create, args, free):
         raise MemoryError("%s could not allocate memory" %(create.__name__, ))
     return ffi.gc(o, free)
 
-
 def refcounted(o, func):
     func(o, 1)
     return ffi.gc(o, lambda o: func(o, -1))
-
 
 def check(func, args):
     res = func(*args)
     if res != 0:
         raise ValueError("%s%r failed with %s" %(func.__name__, args, res))
     return res
-
 
 
 class Scanner(object):
