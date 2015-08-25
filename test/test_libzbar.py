@@ -27,6 +27,21 @@ def test_scan_simple(img, expected):
     symbol = symbols[0]
     assert symbol.data == expected
 
+ean13_im = Image.open(path("ean13-example.png"))
+
+def test_scan_no_qr_code():
+    symbols = zbar.Image.from_im(ean13_im).scan()
+    assert symbols == []
+
+def test_scan_ean13():
+    ean13_type = zbar.symbol_types.ZBAR_EAN13
+    symbols = zbar.Image.from_im(ean13_im).scan(symbol_type=ean13_type)
+    assert len(symbols) == 1
+    assert symbols[0].type == "ZBAR_EAN13"
+
+def test_scan_all_symbol_types():
+    symbols = zbar.Image.from_im(ean13_im).scan(symbol_type=0)
+    assert len(symbols) == 1
 
 @pytest.mark.parametrize("img,expected", test_images)
 @pytest.mark.skipif(np is None, reason="requires numpy")

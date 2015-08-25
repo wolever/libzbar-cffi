@@ -1,0 +1,3 @@
+0.2.0 (2015-08-25)
+    * Default to scanning only QR codes
+    * Add Scanner.set_config method

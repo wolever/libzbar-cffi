@@ -38,6 +38,15 @@ Examples
     >>> zb.Image.from_np(im.size, np.array(im)).scan()
     [<Symbol type=ZBAR_QRCODE quality=1 data='12345' locator=[(12, 12), (12, 75), (75, 75), (75, 12)]>]
 
+    # By default, only QR codes will be scanned. Other symbol types can be
+    # scanned using the ``symbol_type`` argument (see ``libzbar.symbol_types``),
+    # or ``0`` for "all symbol types":
+    >>> ean13 = zb.Image.from_im(Image.open("test/ean13-example.png"))
+    >>> ean13.scan()
+    []
+    >>> ean13.scan(symbol_type=0)
+    [<Symbol type=ZBAR_EAN13 quality=449 data='0012345678905' locator=[(30, 23), ..., (30, 247)]>]
+
 
 NumPy Note
 ----------
