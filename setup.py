@@ -8,12 +8,12 @@ from setuptools import setup, find_packages
 
 os.chdir(os.path.dirname(sys.argv[0]) or ".")
 
-with codecs.open('README.rst', 'r', 'utf-8') as f:
+with codecs.open("README.rst", "r", "utf-8") as f:
     long_description = f.read()
 
 setup(
     name="libzbar-cffi",
-    version="0.2.0",
+    version="0.2.1",
     description="Efficient cffi-based bindings for the zbar QR decoder (Py2, Py3, and PyPy)",
     long_description=long_description,
     url="https://github.com/wolever/libzbar-cffi",

@@ -1,3 +1,7 @@
+0.2.1 (2016-05-03)
+    * Fix encoding bug on Python 3 (thanks @adamchainz;
+      https://github.com/wolever/libzbar-cffi/pull/1)
+
 0.2.0 (2015-08-25)
     * Default to scanning only QR codes
     * Add Scanner.set_config method
