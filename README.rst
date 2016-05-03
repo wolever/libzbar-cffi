@@ -13,7 +13,7 @@ Note: currently a work in progress. Entirely functional and production-ready
 Installation
 ------------
 
-::
+.. code-block:: sh
 
     $ pip install libzbar-cffi
 
@@ -21,7 +21,7 @@ Installation
 Examples
 --------
 
-::
+.. code-block:: python
 
     >>> import libzbar as zb
 
